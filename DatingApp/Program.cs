@@ -1,6 +1,8 @@
 using API.Data;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
+using API.Middleware;
 using API.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,6 +23,9 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
+
 
 var app = builder.Build();
 
@@ -31,8 +36,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+app.UseMiddleware<ExceptionMiddleware>();
 
+app.UseHttpsRedirection();
 
 app.UseRouting();
 
@@ -45,5 +51,12 @@ app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllers();
 });
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+    context.Database.MigrateAsync();
+    Seed.SeedUsers(context);
+}
 
 app.Run();
