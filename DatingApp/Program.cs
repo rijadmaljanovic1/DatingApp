@@ -25,7 +25,11 @@ builder.Services.AddDbContext<DataContext>(options =>
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
-
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
+builder.Services.AddScoped<IPhotoService, PhotoService>();
+builder.Services.AddScoped<ILikesRepository, LikesRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<LogUserActivity>();
 
 var app = builder.Build();
 
@@ -52,11 +56,11 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
 });
 
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<DataContext>();
-    context.Database.MigrateAsync();
-    Seed.SeedUsers(context);
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+//    context.Database.MigrateAsync();
+//    Seed.SeedUsers(context);
+//}
 
 app.Run();
