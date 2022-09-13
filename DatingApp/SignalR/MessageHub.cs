@@ -6,6 +6,7 @@ using API.Entities;
 using API.Extensions;
 using API.Interfaces;
 using AutoMapper;
+using DatingApplication.SignalR;
 using Microsoft.AspNetCore.SignalR;
 
 namespace API.SignalR
