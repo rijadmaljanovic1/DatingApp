@@ -1,10 +1,13 @@
 using API.Data;
+using API.Entities;
 using API.Extensions;
 using API.Helpers;
 using API.Interfaces;
 using API.Middleware;
 using API.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +35,22 @@ builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<LogUserActivity>();
 
 var app = builder.Build();
+using var scope = app.Services.CreateScope();
+var services = scope.ServiceProvider;
 
+try
+{
+    var context = services.GetRequiredService<DataContext>();
+    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
+    await context.Database.MigrateAsync();
+    await Seed.SeedUsers(userManager, roleManager);
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogError(ex, "An error occurred during migration");
+}
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -56,11 +74,6 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllers();
 });
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var context = scope.ServiceProvider.GetRequiredService<DataContext>();
-//    context.Database.MigrateAsync();
-//    Seed.SeedUsers(context);
-//}
+
 
 app.Run();

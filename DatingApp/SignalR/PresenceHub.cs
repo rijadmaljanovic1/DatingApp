@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 
-namespace DatingApplication.SignalR
+namespace API.SignalR
 {
     [Authorize]
     public class PresenceHub : Hub
